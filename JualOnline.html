@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZhenShop - Level Up!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            color: lime;
+            text-align: center;
+            background: url('https://i.imgur.com/UmMaT5d.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid lime;
+            border-radius: 15px;
+            max-width: 400px;
+            margin: 50px auto;
+            box-shadow: 0 0 20px lime;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #loadingScreen {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #spinner {
+            border: 5px solid lime;
+            border-top: 5px solid transparent;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 15px lime;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        button {
+            background: lime;
+            color: black;
+            border: none;
+            padding: 12px 20px;
+            margin: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 0 10px lime;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: yellow;
+            color: black;
+            box-shadow: 0 0 15px yellow;
+            transform: scale(1.05);
+        }
+
+        p {
+            cursor: pointer;
+            padding: 12px;
+            margin: 8px;
+            border: 1px solid lime;
+            display: inline-block;
+            width: 90%;
+            max-width: 300px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 5px lime;
+            transition: all 0.2s ease;
+        }
+
+        p:hover {
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 10px lime;
+            transform: scale(1.05);
+        }
+
+        input, textarea {
+            width: 90%;
+            max-width: 300px;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: 1px solid lime;
+            background: rgba(0, 0, 0, 0.8);
+            color: lime;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sapaan Awal -->
+    <div id="welcomeScreen" class="container" style="display: flex;">
+        <h1>Selamat Datang di ⚡ ZhenShop ⚡</h1>
+        <p>Cari codingan berkualitas? Di sini tempatnya!</p>
+        <button onclick="mulai()">Mulai</button>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div>
+            <div id="spinner"></div>
+            <h2>Loading...</h2>
+        </div>
+    </div>
+
+    <!-- Menu Produk -->
+    <div id="menuProduk" class="container">
+        <h1>⚡ ZhenShop ⚡</h1>
+        <h2>Pilih Produk:</h2>
+        <p onclick="toggleSelection(this, 5000)">📄 Website Sederhana - Rp.5K</p>
+        <p onclick="toggleSelection(this, 10000)">📝 formulir kerja/dll online - Rp.10K</p>
+        <p onclick="toggleSelection(this, 15000)">📂 Landing Page - Rp.15K</p>
+        <p onclick="toggleSelection(this, 20000)">📈 Website toko online - Rp.20K</p>
+        <p onclick="toggleSelection(this, 30000)">📝 Ujian Online sekolah - Rp.30K</p>
+        <p onclick="toggleSelection(this, 20000)">📬 codingan jadi/template - Rp.20K</p>
+        <p onclick="toggleSelection(this, 10000)">📥 modifikasi - Rp.10K</p>
+        <p onclick="toggleSelection(this, 70000)">🦾 bot wa - Rp.70K</p>
+
+        <button onclick="keKasir()">Kasir</button>
+    </div>
+
+    <!-- Kasir -->
+    <div id="kasirScreen" class="container">
+        <h1>🛒 Kasir</h1>
+        <div id="orderList"></div>
+        <h2>Total: <span id="totalHarga">Rp.0</span></h2>
+        <textarea id="requestTambahan" placeholder="Tambahkan request khusus (opsional)"></textarea>
+        <button onclick="konfirmasiPembelian()">Konfirmasi</button>
+        <button onclick="kembaliKeMenu()">Kembali</button>
+    </div>
+
+    <script>
+        let selectedItems = [];
+        let totalHarga = 0;
+
+        function mulai() {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('loadingScreen').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('menuProduk').style.display = 'flex';
+            }, 1500);
+        }
+
+        function toggleSelection(element, harga) {
+            let text = element.innerText;
+            if (selectedItems.some(item => item.nama === text)) {
+                selectedItems = selectedItems.filter(item => item.nama !== text);
+                totalHarga -= harga;
+                element.style.color = "lime";
+            } else {
+                selectedItems.push({ nama: text, harga: harga });
+                totalHarga += harga;
+                element.style.color = "yellow";
+            }
+        }
+
+        function keKasir() {
+            if (selectedItems.length === 0) {
+                alert("Pilih minimal satu produk!");
+                return;
+            }
+
+            let orderListHTML = "";
+            selectedItems.forEach(item => {
+                orderListHTML += `<p>${item.nama.replace(/ - Rp\..+/, '')} - Rp.${item.harga.toLocaleString()}</p>`;
+            });
+
+            document.getElementById('orderList').innerHTML = orderListHTML;
+            document.getElementById('totalHarga').innerText = `Rp.${totalHarga.toLocaleString()}`;
+
+            document.getElementById('menuProduk').style.display = 'none';
+            document.getElementById('kasirScreen').style.display = 'flex';
+        }
+
+        function kembaliKeMenu() {
+            document.getElementById('kasirScreen').style.display = 'none';
+            document.getElementById('menuProduk').style.display = 'flex';
+        }
+
+        function konfirmasiPembelian() {
+            let requestTambahan = document.getElementById('requestTambahan').value;
+            let pesan = `Pesanan Anda:\n\n`;
+
+            selectedItems.forEach(item => {
+                pesan += `- ${item.nama.replace(/ - Rp\..+/, '')} - Rp.${item.harga.toLocaleString()}\n`;
+            });
+
+            pesan += `\nTotal Harga: Rp.${totalHarga.toLocaleString()}`;
+            if (requestTambahan) {
+                pesan += `\n\nRequest Tambahan: ${requestTambahan}`;
+            }
+
+            window.location.href = `https://wa.me/6285343830642?text=${encodeURIComponent(pesan)}`;
+        }
+    </script>
+
+</body>
+</html>
